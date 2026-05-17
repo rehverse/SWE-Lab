@@ -1,12 +1,37 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '../components/AuthContext';
 import PageShell from '../components/PageShell';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { login, isLoggedIn } = useAuth();
   const reason = searchParams.get('reason');
   const nextPath = searchParams.get('next');
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  // If already logged in, redirect
+  if (isLoggedIn) {
+    router.push(nextPath || '/dashboard');
+    return null;
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    login(email, password);
+    router.push(nextPath || '/dashboard');
+  };
 
   return (
     <PageShell
@@ -15,16 +40,23 @@ export default function LoginPage() {
     >
       {reason === 'booking' && (
         <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-sm text-slate-300">
-          Sign in to continue your booking. {nextPath ? `We will send you back to ${nextPath} after you sign in.` : ''}
+          Sign in to continue your booking.{nextPath ? ` We will send you back to ${nextPath} after you sign in.` : ''}
         </div>
       )}
-      <form className="grid gap-4 md:max-w-lg">
+      {error && (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="grid gap-4 md:max-w-lg">
         <div className="grid gap-2">
           <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Email</label>
           <input
             type="email"
             placeholder="you@email.com"
-            className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-slate-100 outline-none"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-slate-100 outline-none focus:border-[#2ea2d8] transition"
           />
         </div>
         <div className="grid gap-2">
@@ -32,13 +64,17 @@ export default function LoginPage() {
           <input
             type="password"
             placeholder="********"
-            className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-slate-100 outline-none"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            className="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-slate-100 outline-none focus:border-[#2ea2d8] transition"
           />
         </div>
-        <button className="rounded-full bg-[#2ea2d8] px-6 py-3 text-sm font-semibold text-white">
+        <button type="submit" className="rounded-full bg-[#2ea2d8] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110">
           Sign In
         </button>
-        <p className="text-xs text-slate-400">Forgot your password? Reset it in seconds.</p>
+        <p className="text-xs text-slate-400">
+          Don&apos;t have an account? <Link href="/register" className="text-[#2ea2d8] font-semibold hover:underline">Sign up</Link>
+        </p>
       </form>
     </PageShell>
   );

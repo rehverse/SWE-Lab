@@ -1,5 +1,6 @@
 import { Bebas_Neue, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { AuthProviderWrapper } from "./components/AuthProviderWrapper";
 
 const displayFont = Bebas_Neue({
   variable: "--font-display",
@@ -21,7 +22,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#050505] text-slate-100">
-        {children}
+        <AuthProviderWrapper>{children}</AuthProviderWrapper>
       </body>
     </html>
   );
